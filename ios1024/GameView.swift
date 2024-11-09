@@ -12,7 +12,7 @@ struct GameView: View {
     @StateObject var viewModel: GameViewModel = GameViewModel()
     var body: some View {
         VStack {
-            Text("Welcome to 1024 by YourName!").font(.title2)
+            Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
             NumberGrid(viewModel: viewModel)
                 .gesture(DragGesture().onEnded {
                     swipeDirection = determineSwipeDirection($0)
@@ -24,6 +24,17 @@ struct GameView: View {
                 )
             if let swipeDirection {
                 Text("You swiped \(swipeDirection)")
+            }
+            Text("valid Swipes: \(viewModel.validSwipes)")
+            Text("Game Status: \(viewModel.gameStatus)")
+            Button(action: {
+                viewModel.resetGame()
+            }) {
+                Text("RESET")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
         }.frame(maxHeight: .infinity, alignment: .top)
     }
