@@ -18,6 +18,8 @@ struct GameView: View {
                     swipeDirection = determineSwipeDirection($0)
                     viewModel.handleSwipe(swipeDirection!)
                 })
+                .onAppear {
+                    viewModel.addRandomTile() }
                 .padding()
                 .frame(
                     maxWidth: .infinity

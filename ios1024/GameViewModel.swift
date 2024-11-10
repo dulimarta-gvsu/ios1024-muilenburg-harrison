@@ -179,7 +179,7 @@ class GameViewModel: ObservableObject {
     func resetGame() {
         grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
         validSwipes = 0
-        gameStatus = "In Progress"
+        gameStatus = "New Game Initiated"
         addRandomTile()
     }
     
