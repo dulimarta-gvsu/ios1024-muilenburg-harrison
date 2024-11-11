@@ -54,6 +54,9 @@ class GameViewModel: ObservableObject {
                 grid[r] = newRow
             }
             
+           
+            
+            
         case .right:
             for r in 0..<grid.count {
                 var newRow = [Int]()
@@ -126,6 +129,7 @@ class GameViewModel: ObservableObject {
             
         }
         if gridChanged {
+            gameStatus = "In Progress"
             addRandomTile()
             validSwipes += 1
             checkGameStatus()

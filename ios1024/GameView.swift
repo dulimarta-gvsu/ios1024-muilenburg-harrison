@@ -29,6 +29,9 @@ struct GameView: View {
             }
             Text("valid Swipes: \(viewModel.validSwipes)")
             Text("Game Status: \(viewModel.gameStatus)")
+                .bold()
+            
+           
             Button(action: {
                 viewModel.resetGame()
             }) {
