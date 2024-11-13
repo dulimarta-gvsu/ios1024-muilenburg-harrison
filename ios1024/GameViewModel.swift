@@ -28,27 +28,26 @@ class GameViewModel: ObservableObject {
     
     func handleSwipe(_ direction: SwipeDirection) {
         var gridChanged = false
+        var merged = false
         
         switch direction {
         case .left:
             for r in 0..<grid.count {
                 var newRow = [Int]()
-                var merged = [Bool](repeating: false, count: 4)
+                var mergedRow = [Bool](repeating: false, count: 4)
                 for c in 0..<grid[r].count {
                     if grid[r][c] != 0 {
-                        if !newRow.isEmpty, let last =
-                            newRow.last, last == grid[r][c],
-                           !merged[newRow.count - 1] {
+                        if !newRow.isEmpty, let last = newRow.last, last == grid[r][c], !mergedRow[newRow.count - 1] {
                             newRow[newRow.count - 1] *= 2
-                            merged[newRow.count - 1] = true
-                            gridChanged = true
+                            mergedRow[newRow.count - 1] = true
+                            merged = true
                         } else {
                             newRow.append(grid[r][c])
-                            if newRow.count - 1 != c {
-                                gridChanged = true
-                            }
                         }
                     }
+                }
+                if newRow.count != grid[r].count {
+                    gridChanged = true
                 }
                 newRow.append(contentsOf: Array(repeating: 0, count: 4 - newRow.count))
                 grid[r] = newRow
@@ -60,20 +59,20 @@ class GameViewModel: ObservableObject {
         case .right:
             for r in 0..<grid.count {
                 var newRow = [Int]()
-                var merged = [Bool](repeating: false, count: 4)
+                var mergedRow = [Bool](repeating: false, count: 4)
                 for c in (0..<grid[r].count).reversed() {
                     if grid[r][c] != 0 {
-                        if !newRow.isEmpty, let last = newRow.last, last == grid[r][c], !merged[newRow.count - 1] {
+                        if !newRow.isEmpty, let last = newRow.last, last == grid[r][c], !mergedRow[newRow.count - 1] {
                             newRow[newRow.count - 1] *= 2
-                            merged[newRow.count - 1] = true
-                            gridChanged = true
+                            mergedRow[newRow.count - 1] = true
+                            merged = true
                         } else {
                             newRow.append(grid[r][c])
-                            if newRow.count - 1 != (grid[r].count - 1 - c) {
-                                gridChanged = true
-                            }
                         }
                     }
+                }
+                if newRow.count != grid[r].count {
+                    gridChanged = true
                 }
                 newRow.append(contentsOf: Array(repeating: 0, count: 4 - newRow.count))
                 grid[r] = newRow.reversed()
@@ -82,20 +81,20 @@ class GameViewModel: ObservableObject {
         case .up:
             for c in 0..<grid[0].count {
                 var newCol = [Int]()
-                var merged = [Bool](repeating: false, count: 4)
+                var mergedCol = [Bool](repeating: false, count: 4)
                 for r in 0..<grid.count {
                     if grid[r][c] != 0 {
-                        if !newCol.isEmpty, let last = newCol.last, last == grid[r][c], !merged[newCol.count - 1] {
+                        if !newCol.isEmpty, let last = newCol.last, last == grid[r][c], !mergedCol[newCol.count - 1] {
                             newCol[newCol.count - 1] *= 2
-                            merged[newCol.count - 1] = true
-                            gridChanged = true
+                            mergedCol[newCol.count - 1] = true
+                            merged = true
                         } else {
                             newCol.append(grid[r][c])
-                            if newCol.count - 1 != r {
-                                gridChanged = true
-                            }
                         }
                     }
+                }
+                if newCol.count != grid.count {
+                    gridChanged = true
                 }
                 newCol.append(contentsOf: Array(repeating: 0, count: 4 - newCol.count))
                 for r in 0..<grid.count {
@@ -106,31 +105,32 @@ class GameViewModel: ObservableObject {
         case .down:
             for c in 0..<grid[0].count {
                 var newCol = [Int]()
-                var merged = [Bool](repeating: false, count: 4)
+                var mergedCol = [Bool](repeating: false, count: 4)
                 for r in (0..<grid.count).reversed() {
                     if grid[r][c] != 0 {
-                        if !newCol.isEmpty, let last = newCol.last, last == grid[r][c], !merged[newCol.count - 1] {
+                        if !newCol.isEmpty, let last = newCol.last, last == grid[r][c], !mergedCol[newCol.count - 1] {
                             newCol[newCol.count - 1] *= 2
-                            merged[newCol.count - 1] = true
-                            gridChanged = true
+                            mergedCol[newCol.count - 1] = true
+                            merged = true
                         } else {
                             newCol.append(grid[r][c])
-                            if newCol.count - 1 != (grid.count - 1 - r) {
-                                gridChanged = true
-                            }
                         }
                     }
+                }
+                if newCol.count != grid.count {
+                    gridChanged = true
                 }
                 newCol.append(contentsOf: Array(repeating: 0, count: 4 - newCol.count))
                 for r in 0..<grid.count {
                     grid[grid.count - 1 - r][c] = newCol[r]
                 }
             }
-            
         }
+        
         if gridChanged {
-            gameStatus = "In Progress"
-            addRandomTile()
+            if !merged {
+                addRandomTile()
+            }
             validSwipes += 1
             checkGameStatus()
         }
@@ -183,7 +183,7 @@ class GameViewModel: ObservableObject {
     func resetGame() {
         grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
         validSwipes = 0
-        gameStatus = "New Game Initiated"
+        //gameStatus = "New Game Initiated"
         addRandomTile()
     }
     
