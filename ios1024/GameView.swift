@@ -12,18 +12,34 @@ struct GameView: View {
     @StateObject var viewModel: GameViewModel = GameViewModel()
     var body: some View {
         VStack {
-            Text("Welcome to 1024 by YourName!").font(.title2)
+            Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
             NumberGrid(viewModel: viewModel)
                 .gesture(DragGesture().onEnded {
                     swipeDirection = determineSwipeDirection($0)
                     viewModel.handleSwipe(swipeDirection!)
                 })
+                .onAppear {
+                    viewModel.addRandomTile() }
                 .padding()
                 .frame(
                     maxWidth: .infinity
                 )
             if let swipeDirection {
                 Text("You swiped \(swipeDirection)")
+            }
+            Text("valid Swipes: \(viewModel.validSwipes)")
+            Text("Game Status: \(viewModel.gameStatus)")
+                .bold()
+            
+           
+            Button(action: {
+                viewModel.resetGame()
+            }) {
+                Text("RESET")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
         }.frame(maxHeight: .infinity, alignment: .top)
     }
@@ -43,14 +59,31 @@ struct NumberGrid: View {
                             .font(.system(size:26))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
-                            .background(Color.white)
+                            .background(getTileColor(value: cellValue))
                             .cornerRadius(10)
+                            .foregroundColor(cellValue == 0 ? Color.clear : Color.black)
                     }
                 }
             }
         }
         .padding(4)
         .background(Color.gray.opacity(0.4))
+    }
+}
+
+func getTileColor(value: Int) -> Color {
+    switch value {
+    case 2: return Color.yellow
+    case 4: return Color.orange
+    case 8: return Color.red
+    case 16: return Color.purple
+    case 32: return Color.blue
+    case 64: return Color.green
+    case 128: return Color.pink
+    case 256: return Color.cyan
+    case 512: return Color.indigo
+    case 1024: return Color.teal
+    default: return Color.white
     }
 }
 
