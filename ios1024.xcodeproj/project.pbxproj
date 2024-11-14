@@ -11,10 +11,12 @@
 		80A932352CE6395900292177 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 80A932342CE6395900292177 /* FirebaseCore */; };
 		80A932372CE6395900292177 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 80A932362CE6395900292177 /* FirebaseDatabase */; };
 		80A932392CE6395900292177 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 80A932382CE6395900292177 /* FirebaseFirestore */; };
+		80A9323B2CE6403300292177 /* GoogleService-Info-2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 80A9323A2CE6403300292177 /* GoogleService-Info-2.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		15A11AB32CD30B37004C5A77 /* ios1024.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ios1024.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		80A9323A2CE6403300292177 /* GoogleService-Info-2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-2.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +47,7 @@
 			children = (
 				15A11AB52CD30B37004C5A77 /* ios1024 */,
 				15A11AB42CD30B37004C5A77 /* Products */,
+				80A9323A2CE6403300292177 /* GoogleService-Info-2.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,6 +130,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80A9323B2CE6403300292177 /* GoogleService-Info-2.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
