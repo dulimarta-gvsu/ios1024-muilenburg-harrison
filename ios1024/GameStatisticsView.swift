@@ -16,8 +16,8 @@ struct GameStatisticsView: View {
                 .padding()
 
             // Display total games, average steps, etc.
-            Text("Total Games Played: \($viewModel.gameStatistics.count)")
-            Text("Average Steps: \($viewModel.averageSteps)")
+            Text("Total Games Played: \(viewModel.gameStatistics.count)")
+            Text("Average Steps: \(viewModel.averageSteps)")
 
             // Add a segmented control or buttons for sorting options
             Picker("Sort by", selection: $sortBy) {

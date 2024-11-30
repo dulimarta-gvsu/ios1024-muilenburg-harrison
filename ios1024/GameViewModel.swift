@@ -7,7 +7,6 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
-import GameStatistic
 
 class GameViewModel: ObservableObject {
     @Published var grid: Array<Array<Int>>
@@ -18,9 +17,24 @@ class GameViewModel: ObservableObject {
     @Published var userRealName: String = ""
     @Published var gameStatistics: [GameStatistic] = []
     
+    struct GameStatistic: Identifiable {
+        let id = UUID()
+        let steps: Int
+        let boardSize: Int
+        let status: String // "WIN" or "LOSE"
+        let maxScore: Int
+        let dateTime: Date
+    }
+    
     init () {
         grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
     }
+    
+    var averageSteps: Double { // Add this computed property
+           guard !gameStatistics.isEmpty else { return 0 }
+           let totalSteps = gameStatistics.reduce(0) { $0 + $1.steps }
+           return Double(totalSteps) / Double(gameStatistics.count)
+       }
     
     
     func addRandomTile() {
@@ -145,20 +159,6 @@ class GameViewModel: ObservableObject {
             checkGameStatus()
         }
     }
-    /*func handleSwipe(_ direction: SwipeDirection) {
-        let fillValue = switch(direction) {
-        case .left:  1
-        case .right:  2
-        case .up:  3
-        case .down:  4
-        }
-        
-        for r in 0 ..< grid.count {
-            for c in 0 ..< grid[r].count {
-                grid[r][c] = fillValue
-            }
-        }
-    }*/
     
     func checkGameStatus() {
         for row in grid {
