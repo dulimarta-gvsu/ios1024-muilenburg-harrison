@@ -5,15 +5,23 @@
 //  Created by Hans Dulimarta for CIS357
 //
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
+import GameStatistic
+
 class GameViewModel: ObservableObject {
     @Published var grid: Array<Array<Int>>
     @Published var validSwipes: Int = 0
     @Published var gameStatus: String = "In Progress"
     @Published var gridSize: Int = 4
     @Published var goalNumber: Int = 1024
+    @Published var userRealName: String = ""
+    @Published var gameStatistics: [GameStatistic] = []
+    
     init () {
         grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
     }
+    
     
     func addRandomTile() {
         var emptyCells: [(Int, Int)] = []
@@ -187,6 +195,56 @@ class GameViewModel: ObservableObject {
         validSwipes = 0
         //gameStatus = "New Game Initiated"
         addRandomTile()
+    }
+    
+    func signUp(email: String, password: String, realName: String, completion: @escaping (Error?) -> Void) {
+        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+            if let error = error {
+                completion(error)
+                return
+            }
+
+            guard let user = authResult?.user else {
+                completion(NSError(domain: "SignUpError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get user after sign up"]))
+                return
+            }
+
+            // Store the user's real name in Firestore
+            let db = Firestore.firestore()
+            db.collection("users").document(user.uid).setData(["realName": realName]) { error in
+                if let error = error {
+                    completion(error)
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+    }
+
+    func signIn(email: String, password: String, completion: @escaping (Error?) -> Void) {
+        Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+            if let error = error {
+                completion(error)
+            } else {
+                // Fetch the user's real name from Firestore
+                guard let user = authResult?.user else {
+                    completion(NSError(domain: "SignInError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get user after sign in"]))
+                    return
+                }
+
+                let db = Firestore.firestore()
+                db.collection("users").document(user.uid).getDocument { document, error in
+                    if let error = error  {
+                        completion(error)
+                    } else if let document = document, document.exists {
+                        self.userRealName = document.get("realName") as? String ?? ""
+                        completion(nil)
+                    } else {
+                        completion(NSError(domain: "SignInError", code: 1, userInfo: [NSLocalizedDescriptionKey: "User document does not exist"]))
+                    }
+                }
+            }
+        }
     }
     
     
