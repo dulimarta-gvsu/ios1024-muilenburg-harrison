@@ -9,6 +9,8 @@ class GameViewModel: ObservableObject {
     @Published var grid: Array<Array<Int>>
     @Published var validSwipes: Int = 0
     @Published var gameStatus: String = "In Progress"
+    @Published var gridSize: Int = 4
+    @Published var goalNumber: Int = 1024
     init () {
         grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
     }

@@ -10,40 +10,56 @@ import SwiftUI
 struct GameView: View {
     @State var swipeDirection: SwipeDirection? = .none
     @StateObject var viewModel: GameViewModel = GameViewModel()
-    var body: some View {
-        VStack {
-            Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
-            NumberGrid(viewModel: viewModel)
-                .gesture(DragGesture().onEnded {
-                    swipeDirection = determineSwipeDirection($0)
-                    viewModel.handleSwipe(swipeDirection!)
-                })
-                .onAppear {
-                    viewModel.addRandomTile() }
-                .padding()
-                .frame(
-                    maxWidth: .infinity
-                )
-            if let swipeDirection {
-                Text("You swiped \(swipeDirection)")
-            }
-            Text("valid Swipes: \(viewModel.validSwipes)")
-            Text("Game Status: \(viewModel.gameStatus)")
-                .bold()
-            
-           
-            Button(action: {
-                viewModel.resetGame()
-            }) {
-                Text("RESET")
+        var body: some View {
+            VStack {
+                Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
+
+                NumberGrid(viewModel: viewModel)
+                    .gesture(DragGesture().onEnded {
+                        swipeDirection = determineSwipeDirection($0)
+                        viewModel.handleSwipe(swipeDirection!)
+                    })
+                    .onAppear {
+                        viewModel.addRandomTile()
+                    }
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .frame(maxWidth: .infinity)
+
+                if let swipeDirection {
+                    Text("You swiped \(swipeDirection)")
+                }
+                Text("valid Swipes: \(viewModel.validSwipes)")
+                Text("Game Status: \(viewModel.gameStatus)")
+                    .bold()
+
+                HStack { // Add an HStack to place buttons side by side
+                    Button(action: {
+                        viewModel.resetGame()
+                    }) {
+                        Text("RESET")
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+
+                    NavigationLink(destination: GameConfigView(viewModel: viewModel)) { // NavigationLink for Settings
+                        Text("SETTINGS")
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                }
             }
-        }.frame(maxHeight: .infinity, alignment: .top)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .onReceive(viewModel.$gridSize) { newGridSize in  // Observe gridSize changes
+                viewModel.resetGame()
+            }
+        }
     }
-}
+
+    // ... rest of your code (NumberGrid, getTileColor, determineSwipeDirection) ...
 
 struct NumberGrid: View {
     @ObservedObject var viewModel: GameViewModel
