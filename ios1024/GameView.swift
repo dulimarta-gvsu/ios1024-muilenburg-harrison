@@ -63,20 +63,20 @@ struct GameView: View {
 }
 
 
+
     // ... rest of your code (NumberGrid, getTileColor, determineSwipeDirection) ...
 
 struct NumberGrid: View {
     @ObservedObject var viewModel: GameViewModel
-    let size: Int = 4
 
     var body: some View {
-        VStack(spacing:4) {
-            ForEach(0..<size, id: \.self) { row in
-                HStack (spacing:4) {
-                    ForEach(0..<size, id: \.self) { column in
+        VStack(spacing: 4) {
+            ForEach(0..<viewModel.gridSize, id: \.self) { row in
+                HStack(spacing: 4) {
+                    ForEach(0..<viewModel.gridSize, id: \.self) { column in
                         let cellValue = viewModel.grid[row][column]
                         Text("\(cellValue)")
-                            .font(.system(size:26))
+                            .font(.system(size: 26))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
                             .background(getTileColor(value: cellValue))

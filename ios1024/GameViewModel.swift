@@ -9,14 +9,18 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class GameViewModel: ObservableObject {
-    @Published var grid: Array<Array<Int>>
-    @Published var validSwipes: Int = 0
-    @Published var gameStatus: String = "In Progress"
-    @Published var gridSize: Int = 4
-    @Published var goalNumber: Int = 1024
-    @Published var userRealName: String = ""
-    @Published var gameStatistics: [GameStatistic] = []
-    
+    @Published var grid: [[Int]]
+    @Published var validSwipes: Int
+    @Published var gameStatus: String
+    @Published var gridSize: Int {
+        didSet {
+            resetGame()
+        }
+    }
+    @Published var goalNumber: Int
+    @Published var userRealName: String
+    @Published var gameStatistics: [GameStatistic]
+
     struct GameStatistic: Identifiable {
         let id = UUID()
         let steps: Int
@@ -25,17 +29,32 @@ class GameViewModel: ObservableObject {
         let maxScore: Int
         let dateTime: Date
     }
-    
-    init () {
-        grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
+
+    init(gridSize: Int = 4, goalNumber: Int = 1024) {
+        self.gridSize = gridSize
+        self.goalNumber = goalNumber
+        self.grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
+        self.validSwipes = 0
+        self.gameStatus = "In Progress"
+        self.userRealName = ""
+        self.gameStatistics = []
+        addRandomTile() // Initialize with a random tile
     }
-    
-    var averageSteps: Double { // Add this computed property
-           guard !gameStatistics.isEmpty else { return 0 }
-           let totalSteps = gameStatistics.reduce(0) { $0 + $1.steps }
-           return Double(totalSteps) / Double(gameStatistics.count)
-       }
-    
+
+    var averageSteps: Double {
+        guard !gameStatistics.isEmpty else { return 0 }
+        let totalSteps = gameStatistics.reduce(0) { $0 + $1.steps }
+        return Double(totalSteps) / Double(gameStatistics.count)
+    }
+
+    func resetGame() {
+        grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
+        validSwipes = 0
+        gameStatus = "In Progress"
+        addRandomTile()
+    }
+
+
     func sortedStatistics(by criteria: GameStatisticsView.SortBy) -> [GameStatistic] {
             switch criteria {
             case .stepsAscending:
@@ -223,12 +242,12 @@ class GameViewModel: ObservableObject {
         }
     }
     
-    func resetGame() {
-        grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
+    /*func resetGame() {
+        grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
         validSwipes = 0
         //gameStatus = "New Game Initiated"
         addRandomTile()
-    }
+    } */
     
     func signUp(email: String, password: String, realName: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
