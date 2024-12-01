@@ -1,8 +1,9 @@
 import SwiftUI
+
 struct GameStatisticsView: View {
-    
     @ObservedObject var viewModel: GameViewModel
-    @State private var sortBy: SortBy = .dateTime // Add a state for sorting
+    @State private var sortBy: SortBy = .dateTime
+    @Environment(\.dismiss) var dismiss
 
     enum SortBy {
         case stepsAscending, stepsDescending, dateTime
@@ -10,16 +11,13 @@ struct GameStatisticsView: View {
 
     var body: some View {
         VStack {
-            // Display the user's real name (fetch this from your viewModel)
-            Text("Welcome, \($viewModel.userRealName)") // Assuming you store real name in viewModel
+            Text("Welcome, \(viewModel.userRealName)")
                 .font(.title)
                 .padding()
 
-            // Display total games, average steps, etc.
             Text("Total Games Played: \(viewModel.gameStatistics.count)")
-            Text("Average Steps: \(viewModel.averageSteps)")
+            Text("Average Steps: \(viewModel.averageSteps, specifier: "%.1f")") // Format to 1 decimal place
 
-            // Add a segmented control or buttons for sorting options
             Picker("Sort by", selection: $sortBy) {
                 Text("Date/Time").tag(SortBy.dateTime)
                 Text("Steps (Ascending)").tag(SortBy.stepsAscending)
@@ -29,21 +27,34 @@ struct GameStatisticsView: View {
             .padding()
 
             List {
-                // Assuming you have a 'gameStatistics' array in your viewModel
-                ForEach(viewModel.sortedStatistics(by: sortBy)) { stat in
+                // 1. Get the sorted statistics array
+                let sortedStats = viewModel.sortedStatistics(by: sortBy)
+
+                // 2. Iterate through the sorted array
+                ForEach(sortedStats) { stat in
                     VStack(alignment: .leading) {
                         Text("Steps: \(stat.steps)")
                         Text("Board Size: \(stat.boardSize)")
                         Text("Status: \(stat.status)")
                         Text("Max Score: \(stat.maxScore)")
-                        // Add more details (date/time, etc.) as needed
+                        Text("Date/Time: \(stat.dateTime, formatter: Self.dateFormatter)")
                     }
                     .background(stat.status == "WIN" ? Color.green.opacity(0.3) : Color.red.opacity(0.3))
                 }
             }
+            Button("Dismiss") {
+                dismiss()
+            }
         }
         .onAppear {
-            viewModel.loadGameStatistics() // Load stats when the view appears
+            viewModel.loadGameStatistics()
         }
     }
+
+    static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 }
