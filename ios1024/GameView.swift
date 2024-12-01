@@ -1,121 +1,117 @@
-//
-//  ContentView.swift
-//  ios1024
-//
-//  Created by Hans Dulimarta for CIS357
-//
-
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct GameView: View {
-    @State var swipeDirection: SwipeDirection? = .none
-    @StateObject var viewModel: GameViewModel = GameViewModel()
+    @EnvironmentObject var appState: AppState
+    @State private var boardSize: Int = 4
+    @State private var steps: Int = 0
+    @State private var maxScore: Int = 0
+    @State private var isGameWon: Bool = false
+    @State private var isGameLost: Bool = false
+    @State private var showGameStatistics: Bool = false
 
     var body: some View {
-        NavigationView {
-            VStack {
-                Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
+        VStack(spacing: 20) {
+            Text("1024 Game")
+                .font(.largeTitle)
+                .padding()
 
-                NumberGrid(viewModel: viewModel)
-                    .gesture(DragGesture().onEnded {
-                        swipeDirection = determineSwipeDirection($0)
-                        viewModel.handleSwipe(swipeDirection!)
-                    })
-                    .onAppear {
-                        viewModel.addRandomTile()
-                    }
+            Text("Board Size: \(boardSize) x \(boardSize)")
+            Text("Steps: \(steps)")
+            Text("Max Score: \(maxScore)")
+
+            // Placeholder for the game board
+            Rectangle()
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 300, height: 300)
+                .overlay(Text("Game Board Placeholder"))
+
+            // Game Control Buttons
+            HStack(spacing: 20) {
+                Button(action: restartGame) {
+                    Text("Restart Game")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+
+                Button(action: leaveGame) {
+                    Text("Leave Game and Logout")
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+            }
+
+            Button(action: {
+                showGameStatistics = true
+            }) {
+                Text("Show Game Statistics")
                     .padding()
-                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.3))
+                    .foregroundColor(.blue)
+                    .cornerRadius(8)
+            }
+            .sheet(isPresented: $showGameStatistics) {
+                GameStatisticsView(sortBy: .dateTime)  // Pass the default sorting option
+            }
+        }
+        .padding()
+        .navigationTitle("Game")
+        .onAppear {
+            loadSavedGame()
+        }
+    }
 
-                if let swipeDirection {
-                    Text("You swiped \(swipeDirection)")
-                }
-                Text("valid Swipes: \(viewModel.validSwipes)")
-                Text("Game Status: \(viewModel.gameStatus)")
-                    .bold()
+    // Function to restart the game
+    private func restartGame() {
+        steps = 0
+        maxScore = 0
+        isGameWon = false
+        isGameLost = false
+        // Logic to reset the game board goes here
+    }
 
-                HStack {
-                    Button(action: {
-                        viewModel.resetGame()
-                    }) {
-                        Text("RESET")
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
+    // Function to leave the game
+    private func leaveGame() {
+        saveGameState()
+        appState.isLoggedIn = false
+    }
 
-                    NavigationLink(destination: GameConfigView(viewModel: viewModel)) {
-                        Text("SETTINGS")
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+    // Function to load the saved game from Firestore
+    private func loadSavedGame() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        db.collection("players").document(userId).collection("gameState").document("currentGame")
+            .getDocument { (document, error) in
+                if let document = document, document.exists {
+                    if let data = document.data() {
+                        self.boardSize = data["boardSize"] as? Int ?? 4
+                        self.steps = data["steps"] as? Int ?? 0
+                        self.maxScore = data["maxScore"] as? Int ?? 0
                     }
                 }
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .onReceive(viewModel.$gridSize) { newGridSize in
-                viewModel.resetGame()
+    }
+
+    // Function to save the game state to Firestore
+    private func saveGameState() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        let gameData: [String: Any] = [
+            "boardSize": boardSize,
+            "steps": steps,
+            "maxScore": maxScore
+        ]
+        db.collection("players").document(userId).collection("gameState").document("currentGame").setData(gameData) { error in
+            if let error = error {
+                print("Failed to save game state: \(error.localizedDescription)")
             }
         }
     }
 }
 
 
-
-    // ... rest of your code (NumberGrid, getTileColor, determineSwipeDirection) ...
-
-struct NumberGrid: View {
-    @ObservedObject var viewModel: GameViewModel
-
-    var body: some View {
-        VStack(spacing: 4) {
-            ForEach(0..<viewModel.gridSize, id: \.self) { row in
-                HStack(spacing: 4) {
-                    ForEach(0..<viewModel.gridSize, id: \.self) { column in
-                        let cellValue = viewModel.grid[row][column]
-                        Text("\(cellValue)")
-                            .font(.system(size: 26))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
-                            .background(getTileColor(value: cellValue))
-                            .cornerRadius(10)
-                            .foregroundColor(cellValue == 0 ? Color.clear : Color.black)
-                    }
-                }
-            }
-        }
-        .padding(4)
-        .background(Color.gray.opacity(0.4))
-    }
-}
-
-func getTileColor(value: Int) -> Color {
-    switch value {
-    case 2: return Color.yellow
-    case 4: return Color.orange
-    case 8: return Color.red
-    case 16: return Color.purple
-    case 32: return Color.blue
-    case 64: return Color.green
-    case 128: return Color.pink
-    case 256: return Color.cyan
-    case 512: return Color.indigo
-    case 1024: return Color.teal
-    default: return Color.white
-    }
-}
-
-func determineSwipeDirection(_ swipe: DragGesture.Value) -> SwipeDirection {
-    if abs(swipe.translation.width) > abs(swipe.translation.height) {
-        return swipe.translation.width < 0 ? .left : .right
-    } else {
-        return swipe.translation.height < 0 ? .up : .down
-    }
-}
-
-
-#Preview {
-    GameView()
-}

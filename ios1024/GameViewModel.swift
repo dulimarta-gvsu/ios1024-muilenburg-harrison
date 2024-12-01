@@ -4,6 +4,7 @@
 //
 //  Created by Hans Dulimarta for CIS357
 //
+import Foundation
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -55,16 +56,20 @@ class GameViewModel: ObservableObject {
     }
 
 
-    func sortedStatistics(by criteria: GameStatisticsView.SortBy) -> [GameStatistic] {
-            switch criteria {
-            case .stepsAscending:
-                return gameStatistics.sorted { $0.steps < $1.steps }
-            case .stepsDescending:
-                return gameStatistics.sorted { $0.steps > $1.steps }
-            case .dateTime:
-                return gameStatistics.sorted { $0.dateTime < $1.dateTime }
-            }
+
+    func sortedStatistics(by criteria: SortBy, statistics: [GameStatistic]) -> [GameStatistic] {
+        switch criteria {
+        case .stepsAscending:
+            return statistics.sorted { $0.steps < $1.steps }
+        case .stepsDescending:
+            return statistics.sorted { $0.steps > $1.steps }
+        case .dateTime:
+            return statistics.sorted { $0.dateTime < $1.dateTime }
         }
+    }
+
+
+
     
     func loadGameStatistics() {
             guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -241,13 +246,6 @@ class GameViewModel: ObservableObject {
             gameStatus = "In Progress"
         }
     }
-    
-    /*func resetGame() {
-        grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
-        validSwipes = 0
-        //gameStatus = "New Game Initiated"
-        addRandomTile()
-    } */
     
     func signUp(email: String, password: String, realName: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
