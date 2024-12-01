@@ -17,7 +17,11 @@ class GameViewModel: ObservableObject {
             resetGame()
         }
     }
-    @Published var goalNumber: Int
+    @Published var goalNumber: Int {
+        didSet {
+            checkGameStatus()
+        }
+    }
     @Published var userRealName: String
     @Published var gameStatistics: [GameStatistic]
 
@@ -214,40 +218,30 @@ class GameViewModel: ObservableObject {
     
     func checkGameStatus() {
         for row in grid {
-            if row.contains(1024) {
+            if row.contains(goalNumber) {
                 gameStatus = "WIN"
                 return
             }
         }
-        
+
         var emptyTileExists = false
-        
+
         for r in 0..<grid.count {
             for c in 0..<grid[r].count {
                 if grid[r][c] == 0 {
                     emptyTileExists = true
                 }
-                if r < grid.count - 1, grid[r][c] == grid[r + 1][c] {
+                if r < grid.count - 1 && grid[r][c] == grid[r + 1][c] {
                     return
                 }
-                if c < grid[r].count - 1, grid[r][c] == grid[r][c + 1] {
+                if c < grid[r].count - 1 && grid[r][c] == grid[r][c + 1] {
                     return
                 }
             }
         }
-        if !emptyTileExists {
-            gameStatus = "LOSE"
-        } else {
-            gameStatus = "In Progress"
-        }
+
+        gameStatus = emptyTileExists ? "In Progress" : "LOSE"
     }
-    
-    /*func resetGame() {
-        grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
-        validSwipes = 0
-        //gameStatus = "New Game Initiated"
-        addRandomTile()
-    } */
     
     func signUp(email: String, password: String, realName: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in

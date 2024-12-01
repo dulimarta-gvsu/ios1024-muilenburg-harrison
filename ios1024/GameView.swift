@@ -10,6 +10,8 @@ import SwiftUI
 struct GameView: View {
     @State var swipeDirection: SwipeDirection? = .none
     @StateObject var viewModel: GameViewModel = GameViewModel()
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
         NavigationView {
@@ -20,6 +22,7 @@ struct GameView: View {
                     .gesture(DragGesture().onEnded {
                         swipeDirection = determineSwipeDirection($0)
                         viewModel.handleSwipe(swipeDirection!)
+                        checkGameStatus()
                     })
                     .onAppear {
                         viewModel.addRandomTile()
@@ -27,11 +30,11 @@ struct GameView: View {
                     .padding()
                     .frame(maxWidth: .infinity)
 
-                if let swipeDirection {
+                /*if let swipeDirection {
                     Text("You swiped \(swipeDirection)")
-                }
-                Text("valid Swipes: \(viewModel.validSwipes)")
-                Text("Game Status: \(viewModel.gameStatus)")
+                }*/
+                Text("Valid Swipes: \(viewModel.validSwipes)")
+               // Text("Game Status: \(viewModel.gameStatus)")
                     .bold()
 
                 HStack {
@@ -55,9 +58,25 @@ struct GameView: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .onReceive(viewModel.$gridSize) { newGridSize in
-                viewModel.resetGame()
+            .alert(isPresented: $showingAlert) {
+                Alert(
+                    title: Text(alertMessage),
+                    message: Text("Would you like to play again?"),
+                    dismissButton: .default(Text("OK")) {
+                        viewModel.resetGame()
+                    }
+                )
             }
+        }
+    }
+
+    func checkGameStatus() {
+        if viewModel.gameStatus == "WIN" {
+            alertMessage = "You Win!"
+            showingAlert = true
+        } else if viewModel.gameStatus == "LOSE" {
+            alertMessage = "You Lose!"
+            showingAlert = true
         }
     }
 }
