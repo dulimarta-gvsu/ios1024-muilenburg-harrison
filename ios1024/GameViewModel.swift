@@ -36,6 +36,39 @@ class GameViewModel: ObservableObject {
            return Double(totalSteps) / Double(gameStatistics.count)
        }
     
+    func sortedStatistics(by criteria: GameStatisticsView.SortBy) -> [GameStatistic] {
+            switch criteria {
+            case .stepsAscending:
+                return gameStatistics.sorted { $0.steps < $1.steps }
+            case .stepsDescending:
+                return gameStatistics.sorted { $0.steps > $1.steps }
+            case .dateTime:
+                return gameStatistics.sorted { $0.dateTime < $1.dateTime }
+            }
+        }
+    
+    func loadGameStatistics() {
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
+            db.collection("users").document(uid).collection("gameStats").getDocuments
+     { querySnapshot, error in
+                if let error = error {
+                    print("Error loading game statistics: \(error)")
+                } else {
+                    self.gameStatistics = querySnapshot?.documents.compactMap { document in
+                        let data = document.data()
+                        guard let steps = data["steps"] as? Int,
+                              let boardSize = data["boardSize"] as? Int,
+                              let status = data["status"] as? String,
+                              let maxScore = data["maxScore"] as? Int,
+                              let timestamp = data["dateTime"] as? Timestamp else { return nil }
+                        let dateTime = timestamp.dateValue()
+                        return GameStatistic(steps: steps, boardSize: boardSize, status: status, maxScore: maxScore, dateTime: dateTime)
+                    } ?? []
+                }
+            }
+        }
+    
     
     func addRandomTile() {
         var emptyCells: [(Int, Int)] = []
