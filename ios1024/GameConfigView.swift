@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GameConfigView: View {
     @ObservedObject var viewModel: GameViewModel
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack {
@@ -27,7 +28,7 @@ struct GameConfigView: View {
             .padding()
 
             Button("Back to Game") {
-                // This will automatically navigate back using the NavigationLink
+                dismiss()
             }
             .padding()
             .background(Color.blue)
@@ -36,3 +37,4 @@ struct GameConfigView: View {
         }
     }
 }
+

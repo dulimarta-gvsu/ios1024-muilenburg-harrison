@@ -10,7 +10,9 @@ import SwiftUI
 struct GameView: View {
     @State var swipeDirection: SwipeDirection? = .none
     @StateObject var viewModel: GameViewModel = GameViewModel()
-        var body: some View {
+
+    var body: some View {
+        NavigationView {
             VStack {
                 Text("Welcome to 1024 by Jerod and Wes!").font(.title2)
 
@@ -32,7 +34,7 @@ struct GameView: View {
                 Text("Game Status: \(viewModel.gameStatus)")
                     .bold()
 
-                HStack { // Add an HStack to place buttons side by side
+                HStack {
                     Button(action: {
                         viewModel.resetGame()
                     }) {
@@ -43,7 +45,7 @@ struct GameView: View {
                             .cornerRadius(10)
                     }
 
-                    NavigationLink(destination: GameConfigView(viewModel: viewModel)) { // NavigationLink for Settings
+                    NavigationLink(destination: GameConfigView(viewModel: viewModel)) {
                         Text("SETTINGS")
                             .padding()
                             .background(Color.blue)
@@ -53,11 +55,13 @@ struct GameView: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .onReceive(viewModel.$gridSize) { newGridSize in  // Observe gridSize changes
+            .onReceive(viewModel.$gridSize) { newGridSize in
                 viewModel.resetGame()
             }
         }
     }
+}
+
 
     // ... rest of your code (NumberGrid, getTileColor, determineSwipeDirection) ...
 
