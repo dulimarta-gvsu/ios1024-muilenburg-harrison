@@ -19,6 +19,7 @@ struct LoginView: View {
 
                 SecureField("Password", text: $password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textContentType(.password)
 
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
@@ -54,7 +55,7 @@ struct LoginView: View {
                 }
             }
             .padding()
-            .navigationTitle("Login")
+            .navigationTitle("Login to 1024 Game!")
         }
     }
 

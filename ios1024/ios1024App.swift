@@ -24,7 +24,7 @@ struct ios1024App: App {
     
     var body: some Scene {
         WindowGroup {
-            GameView()
+            LoginView()
             
         }
     }
