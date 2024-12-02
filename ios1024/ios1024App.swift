@@ -1,26 +1,39 @@
-import Foundation
 import SwiftUI
+import FirebaseCore
+import FirebaseAuth
+import FirebaseAppCheck
 import Firebase
-import FirebaseAuth // <-- Properly added FirebaseAuth to resolve all Auth usage
+
 
 @main
 struct ios1024App: App {
-    @StateObject private var appState = AppState() // Create the shared instance
-
-    init() {
-        FirebaseApp.configure() // Configure Firebase on initialization
-    }
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var appState = AppState()
 
     var body: some Scene {
         WindowGroup {
             if appState.isLoggedIn {
-                GameView() // Show GameView if user is logged in
-                    .environmentObject(appState) // Inject appState
+                GameView()
+                    .environmentObject(appState)
             } else {
-                LoginView() // Show LoginView if user is not logged in
-                    .environmentObject(appState) // Inject appState
+                LoginView()
+                    .environmentObject(appState)
             }
         }
+    }
+}
+
+// AppDelegate to handle Firebase initialization
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Configure Firebase
+        FirebaseApp.configure()
+        
+        // Set up App Check Debug Provider for development
+        let providerFactory = AppCheckDebugProviderFactory()
+        AppCheck.setAppCheckProviderFactory(providerFactory)
+        
+        return true
     }
 }
 

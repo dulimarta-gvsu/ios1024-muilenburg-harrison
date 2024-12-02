@@ -11,30 +11,30 @@ struct NewAccountView: View {
     @State private var confirmPassword: String = ""
     @State private var errorMessage: String?
     @State private var isLoading: Bool = false
-
+    
     var body: some View {
         VStack(spacing: 20) {
             TextField("Email", text: $email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
-
+            
             TextField("Real Name", text: $realName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-
+            
             SecureField("Password", text: $password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .textContentType(.password)
-
+            
             SecureField("Confirm Password", text: $confirmPassword)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .textContentType(.password)
-
+            
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
             }
-
+            
             if isLoading {
                 ProgressView()
             } else {
@@ -47,45 +47,49 @@ struct NewAccountView: View {
                         .cornerRadius(8)
                 }
                 .disabled(email.isEmpty || password.isEmpty || password != confirmPassword)
-
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.3))
-                        .foregroundColor(.blue)
-                        .cornerRadius(8)
-                }
             }
         }
         .padding()
-        .navigationTitle("Create New Account")
+        .navigationTitle("Create Account")
     }
 
-    // Function to create a new account using Firebase Authentication
+    // Function to create a new user account
     private func createAccount() {
         isLoading = true
         errorMessage = nil
 
+        // Use Firebase Authentication to create a user with email and password
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            isLoading = false
+            DispatchQueue.main.async {
+                self.isLoading = false
 
-            if let error = error {
-                errorMessage = "Failed to create account: \(error.localizedDescription)"
-            } else if let user = result?.user {
-                saveUserNameToFirestore(userId: user.uid)
+                if let error = error {
+                    // Handle specific errors that can arise during account creation
+                    self.errorMessage = "Failed to create account: \(error.localizedDescription)"
+                    print("Authentication error: \(error.localizedDescription)")
+                    return
+                }
+
+                // If user creation succeeded, save user data to Firestore
+                if let user = result?.user {
+                    saveUserData(user: user)
+                }
             }
         }
     }
 
-    // Function to save the user's real name to Firestore
-    private func saveUserNameToFirestore(userId: String) {
+    // Function to save the user's additional information to Firestore
+    private func saveUserData(user: User) {
         let db = Firestore.firestore()
-        db.collection("players").document(userId).setData(["realName": realName]) { error in
+        let userData: [String: Any] = [
+            "email": email,
+            "realName": realName
+        ]
+
+        db.collection("users").document(user.uid).setData(userData) { error in
             if let error = error {
-                errorMessage = "Failed to save user data: \(error.localizedDescription)"
+                self.errorMessage = "Failed to save user data: \(error.localizedDescription)"
+                print("Firestore error: \(error.localizedDescription)")
             } else {
                 // Successfully created account and saved user data
                 proceedToGameView()
@@ -93,16 +97,13 @@ struct NewAccountView: View {
         }
     }
 
-    // Function to navigate to the GameView after successful account creation
+    // Function to navigate to GameView after successful account creation
     private func proceedToGameView() {
-        // If login is invalid, show an error message
         if Auth.auth().currentUser == nil {
             errorMessage = "Login invalid. Please try again."
         } else {
-            // Navigate to the GameView by updating the app state
             appState.isLoggedIn = true
         }
     }
 }
-
 
