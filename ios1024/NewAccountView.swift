@@ -24,9 +24,11 @@ struct NewAccountView: View {
 
             SecureField("Password", text: $password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .textContentType(.password)
 
             SecureField("Confirm Password", text: $confirmPassword)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .textContentType(.password)
 
             if let errorMessage = errorMessage {
                 Text(errorMessage)
@@ -103,8 +105,4 @@ struct NewAccountView: View {
     }
 }
 
-// AppState to manage navigation
-class AppState: ObservableObject {
-    @Published var isLoggedIn: Bool = false
-}
 
